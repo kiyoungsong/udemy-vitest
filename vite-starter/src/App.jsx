@@ -1,9 +1,8 @@
 import { useState } from "react";
 import "./App.css";
 function App() {
-  const [buttonColor, setButtonColor] = useState("medium-violet-red");
-  const nextColor =
-    buttonColor === "medium-violet-red" ? "midnight-blue" : "medium-violet-red";
+  const [buttonColor, setButtonColor] = useState("red");
+  const nextColor = buttonColor === "red" ? "blue" : "red";
   const [isChecked, setChecked] = useState(false);
 
   const handleClick = (e) => {
