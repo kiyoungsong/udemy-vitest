@@ -1,8 +1,10 @@
 import { useState } from "react";
 import "./App.css";
+import { kebabCaseToTitleCase } from "./helper";
 function App() {
-  const [buttonColor, setButtonColor] = useState("red");
-  const nextColor = buttonColor === "red" ? "blue" : "red";
+  const [buttonColor, setButtonColor] = useState("medium-violet-red");
+  const nextColor =
+    buttonColor === "medium-violet-red" ? "midnight-blue" : "medium-violet-red";
   const [isChecked, setChecked] = useState(false);
 
   const handleClick = (e) => {
@@ -12,13 +14,12 @@ function App() {
 
   return (
     <div>
-      {/* <h1>I'm gonna learn React Testing Library</h1> */}
       <button
         className={`${isChecked ? "gray" : buttonColor}`}
         onClick={() => setButtonColor(nextColor)}
         disabled={isChecked}
       >
-        Change to {nextColor}
+        Change to {kebabCaseToTitleCase(nextColor)}
       </button>
       <br />
       <input
