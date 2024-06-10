@@ -1,11 +1,8 @@
-import {
-  findByRole,
-  render,
-  screen,
-} from "../../../test-utils/testing-library-utils";
+import { render, screen } from "../../../test-utils/testing-library-utils";
 import userEvent from "@testing-library/user-event";
 import Options from "../Options";
-import { expect } from "vitest";
+import { describe, expect, test } from "vitest";
+import OrderEntry from "../OrderEntry";
 
 test("updatescoop subtotal when scoops change", async () => {
   const user = userEvent.setup();
@@ -77,4 +74,109 @@ test("updatetopping subtotal when topping change", async () => {
   // 체크 해제했을때 가격
   await user.click(mnmsCheckBox);
   expect(toppingSubtotal).toHaveTextContent("3.0");
+});
+
+describe("grand total", () => {
+  test("grand total starts at $0.00", () => {
+    const { unmount } = render(<OrderEntry />);
+    const headingElement = screen.getByText("grand total: $", {
+      exact: false,
+    });
+    expect(headingElement).toHaveTextContent("0.0");
+    unmount();
+  });
+  test("grand total updates properly if scoop is added first", async () => {
+    // 스쿱 넣고 토핑 얺었을때
+    const user = userEvent.setup();
+    render(<OrderEntry />);
+    const grandElement = screen.getByRole("heading", {
+      name: /Grand total: \$/,
+    });
+
+    const chocolateInput = await screen.findByRole("spinbutton", {
+      name: "Chocolate",
+    });
+
+    await user.clear(chocolateInput);
+    await user.type(chocolateInput, "1");
+
+    expect(grandElement).toHaveTextContent("2.0");
+
+    const hotfudecheckBox = await screen.findByRole("checkbox", {
+      name: "Hot fudge",
+    });
+
+    await user.click(hotfudecheckBox);
+
+    expect(grandElement).toHaveTextContent("3.5");
+  });
+  test("grand total updates properly if topping is added first", async () => {
+    const user = userEvent.setup();
+    render(<OrderEntry />);
+    const grandElement = screen.getByRole("heading", {
+      name: /Grand total: \$/,
+    });
+
+    const hotfudecheckBox = await screen.findByRole("checkbox", {
+      name: "Hot fudge",
+    });
+
+    await user.click(hotfudecheckBox);
+    expect(grandElement).toHaveTextContent("1.5");
+
+    const chocolateInput = await screen.findByRole("spinbutton", {
+      name: "Chocolate",
+    });
+
+    await user.clear(chocolateInput);
+    await user.type(chocolateInput, "1");
+
+    expect(grandElement).toHaveTextContent("3.5");
+  });
+  test("grand total updates properly if item is removed", async () => {
+    const user = userEvent.setup();
+    render(<OrderEntry />);
+
+    const grandElement = screen.getByRole("heading", {
+      name: /Grand total: \$/,
+    });
+
+    expect(grandElement).toHaveTextContent("0.0");
+
+    // 스쿱 2개 추가 후 토핑2개 추가 후 한개 삭제하면 가격이 변하는지 확인
+    const chocolateInput = await screen.findByRole("spinbutton", {
+      name: "Chocolate",
+    });
+
+    await user.clear(chocolateInput);
+    await user.type(chocolateInput, "2");
+
+    expect(grandElement).toHaveTextContent("4.0");
+
+    // 1개 토핑 삭제
+    await user.clear(chocolateInput);
+    await user.type(chocolateInput, "1");
+
+    expect(grandElement).toHaveTextContent("2.0");
+
+    // 2개 토핑 추가
+    const hotfugeCheckbox = await screen.findByRole("checkbox", {
+      name: "Hot fudge",
+    });
+
+    await user.click(hotfugeCheckbox);
+
+    const cherriesCheckbox = await screen.findByRole("checkbox", {
+      name: "Cherries",
+    });
+
+    await user.click(cherriesCheckbox);
+
+    expect(grandElement).toHaveTextContent("5.0");
+
+    // 한개 토핑 삭제
+    await user.click(cherriesCheckbox);
+
+    expect(grandElement).toHaveTextContent("3.5");
+  });
 });
